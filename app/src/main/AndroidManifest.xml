@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidBigHomework">
         <activity
+            android:name=".EditDrinkActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MoreActivity"
+            android:exported="false" />
+        <activity
             android:name=".DetailActivity"
             android:exported="false" />
         <activity

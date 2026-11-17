@@ -1,9 +1,11 @@
 package com.example.androidbighomework
 
-// Hard-coded preset drinks shown on the home screen.
+import android.content.Context
+
+// Combines the hard-coded drinks and the Room drinks into one list.
 object DrinkData {
-    fun getAll(): MutableList<Drink> {
-        return mutableListOf(
+    fun getAll(context: Context): MutableList<Drink> {
+        val drinks = mutableListOf(
             Drink(-1, "Americano", 5.0, 0.0, 90.0,
                 "A crisp black coffee with no added sugar.",
                 "1. Prepare one shot of espresso.\n2. Add about 150 ml of hot water.\n3. Stir well and serve."),
@@ -23,12 +25,40 @@ object DrinkData {
                 "Juice made from fresh oranges.",
                 "1. Wash and cut the oranges.\n2. Juice them with a juicer.\n3. Pour into a glass and serve.")
         )
+
+        val dao = DrinkDatabase.getDatabase(context).drinkDao()
+        val customDrinks = dao.getAllCustomDrinks()
+        for (item in customDrinks) {
+            drinks.add(
+                Drink(item.id, item.name, item.calories, item.sugar,
+                    item.caffeine, item.description, item.steps, true)
+            )
+        }
+
+        // Reload the saved star ratings every time the list is shown.
+        for (drink in drinks) {
+            val saved = dao.getRating(getKey(drink))
+            if (saved != null) {
+                drink.rating = saved.stars
+            }
+        }
+        return drinks
     }
 
-    fun getById(id: Int): Drink? {
-        for (drink in getAll()) {
-            if (drink.id == id) return drink
+    fun getById(context: Context, id: Int): Drink? {
+        val drinks = getAll(context)
+        for (drink in drinks) {
+            if (drink.id == id) {
+                return drink
+            }
         }
         return null
+    }
+
+    fun getKey(drink: Drink): String {
+        if (drink.isCustom) {
+            return "custom_" + drink.id
+        }
+        return "preset_" + drink.id
     }
 }
